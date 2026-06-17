@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Contact Messages - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-title">Main Menu</div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'admin_dashboard' %}" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="{% url 'admin_users_list' %}" class="sidebar-link"><i class="fa-solid fa-users"></i> Manage Users</a></li>
+                <li><a href="{% url 'admin_messages' %}" class="sidebar-link active"><i class="fa-regular fa-envelope"></i> Feedback / Messages</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 1.75rem; font-weight: 800;">Contact Form Messages</h1>
+            <p style="color: var(--text-secondary);">View feedback, queries, and complaints received from users on the platform.</p>
+        </div>
+
+        <div class="glass-card" style="background: var(--bg-secondary);">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">Inbox ({{ messages_list.count }} messages)</h3>
+            
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Sender</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th>Received Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if messages_list %}
+                            {% for msg in messages_list %}
+                                <tr>
+                                    <td style="font-weight: 600;">{{ msg.name }}</td>
+                                    <td><a href="mailto:{{ msg.email }}" style="color: var(--primary);">{{ msg.email }}</a></td>
+                                    <td>{{ msg.subject }}</td>
+                                    <td style="max-width: 300px; word-wrap: break-word; white-space: normal;">{{ msg.message }}</td>
+                                    <td>{{ msg.created_at|date:"M d, Y, h:i A" }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-secondary);">
+                                    Your inbox is empty.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

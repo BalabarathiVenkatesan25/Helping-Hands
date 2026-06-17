@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Helping Hands - Connecting Donors & Orphanages{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header class="sticky-header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="{% url 'index' %}" class="brand">
+                    <i class="fa-solid fa-hands-holding-child"></i>
+                    <span>HelpingHands</span>
+                </a>
+                
+                <ul class="nav-links">
+                    <li><a href="{% url 'index' %}" class="nav-link">Home</a></li>
+                    <li><a href="{% url 'orphanage_list' %}" class="nav-link">Orphanages</a></li>
+                    <li><a href="{% url 'request_list' %}" class="nav-link">Requests</a></li>
+                    <li><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
+                    
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a></li>
+                        
+                        <!-- Notifications Drawer Bell -->
+                        <li class="nav-badge-container">
+                            <button id="notif-bell" class="theme-toggle" style="background:none; border:none; padding:0; width:auto; height:auto; font-size:1.2rem; cursor:pointer; color:var(--text-secondary);">
+                                <i class="fa-regular fa-bell"></i>
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="notif-badge">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </button>
+                            
+                            <!-- Notifications Drawer -->
+                            <div id="notif-drawer" class="notif-drawer">
+                                <div class="notif-drawer-header">
+                                    <span>Notifications</span>
+                                    <a href="#" id="mark-all-read" style="font-size:0.75rem; color:var(--primary);">Mark all as read</a>
+                                </div>
+                                <div class="notif-drawer-content">
+                                    {% if unread_notifications %}
+                                        {% for notif in unread_notifications %}
+                                            <div class="notif-drawer-item" data-id="{{ notif.id }}">
+                                                <div style="font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 5px;">
+                                                    {% if notif.notification_type == 'Success' %}
+                                                        <i class="fa-solid fa-circle-check" style="color:var(--success);"></i>
+                                                    {% elif notif.notification_type == 'Warning' %}
+                                                        <i class="fa-solid fa-circle-exclamation" style="color:var(--warning);"></i>
+                                                    {% else %}
+                                                        <i class="fa-solid fa-circle-info" style="color:var(--info);"></i>
+                                                    {% endif %}
+                                                    {{ notif.title }}
+                                                </div>
+                                                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">
+                                                    {{ notif.message }}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="p-3 text-center text-muted">No new notifications</div>
+                                    {% endif %}
+                                </div>
+                                <div class="notif-drawer-footer">
+                                    <a href="{% url 'notifications_list' %}">View All Notifications</a>
+                                </div>
+                            </div>
+                        </li>
+                        
+                        <!-- Profile/Settings Menu -->
+                        <li>
+                            <a href="{% url 'profile' %}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">
+                                <i class="fa-regular fa-user"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'logout' %}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;">Logout</a>
+                        </li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="btn btn-outline">Login</a></li>
+                        <li>
+                            <div style="position: relative; display: inline-block;">
+                                <button class="btn btn-primary" onclick="this.nextElementSibling.classList.toggle('show')" style="gap: 5px;">
+                                    Register <i class="fa-solid fa-caret-down"></i>
+                                </button>
+                                <div class="notif-drawer" style="width: 180px; top: 45px; right: 0;">
+                                    <a href="{% url 'register_donor' %}" class="notif-drawer-item" style="display: block; font-weight: 500;">As Donor</a>
+                                    <a href="{% url 'register_orphanage' %}" class="notif-drawer-item" style="display: block; font-weight: 500;">As Orphanage</a>
+                                </div>
+                            </div>
+                        </li>
+                    {% endif %}
+                    
+                    <!-- Dark/Light Theme Toggle -->
+                    <li>
+                        <button id="theme-toggle" class="theme-toggle">
+                            <i class="fa-solid fa-moon"></i>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer style="background-color: var(--bg-secondary); border-top: 1px solid var(--border-color); padding: 4rem 0 2rem 0; margin-top: 4rem;">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <a href="{% url 'index' %}" class="brand" style="margin-bottom: 1rem;">
+                        <i class="fa-solid fa-hands-holding-child"></i>
+                        <span>HelpingHands</span>
+                    </a>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">Connecting compassionate donors with orphanages to build transparent and impactful support systems for children.</p>
+                </div>
+                <div>
+                    <h4 style="font-weight: 700; margin-bottom: 1rem;">Quick Links</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                        <li><a href="{% url 'index' %}" class="nav-link" style="padding: 0;">Home</a></li>
+                        <li><a href="{% url 'orphanage_list' %}" class="nav-link" style="padding: 0;">Browse Orphanages</a></li>
+                        <li><a href="{% url 'request_list' %}" class="nav-link" style="padding: 0;">Donation Requests</a></li>
+                        <li><a href="{% url 'contact' %}" class="nav-link" style="padding: 0;">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="font-weight: 700; margin-bottom: 1rem;">Get Involved</h4>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                        <li><a href="{% url 'register_donor' %}" class="nav-link" style="padding: 0;">Register as Donor</a></li>
+                        <li><a href="{% url 'register_orphanage' %}" class="nav-link" style="padding: 0;">Register Orphanage</a></li>
+                        <li><a href="{% url 'donate_money_general' %}" class="nav-link" style="padding: 0;">General Money Donation</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="font-weight: 700; margin-bottom: 1rem;">Contact Info</h4>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;"><i class="fa-solid fa-envelope" style="color: var(--primary); margin-right: 5px;"></i> support@helpinghands.org</p>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;"><i class="fa-solid fa-phone" style="color: var(--primary); margin-right: 5px;"></i> +1 (555) 019-2834</p>
+                    <div style="display: flex; gap: 1rem; font-size: 1.2rem; color: var(--text-secondary);">
+                        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr style="border: none; border-top: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; font-size: 0.85rem; color: var(--text-secondary);">
+                <p>&copy; 2026 Helping Hands Platform. All rights reserved.</p>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Messages -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Render Django Messages Framework as Toasts -->
+    <script>
+        {% if messages %}
+            {% for message in messages %}
+                showToast("{{ message|escapejs }}", "{{ message.tags }}");
+            {% endfor %}
+        {% endif %}
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

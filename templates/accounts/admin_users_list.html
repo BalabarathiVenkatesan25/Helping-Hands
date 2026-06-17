@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-title">Main Menu</div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'admin_dashboard' %}" class="sidebar-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="{% url 'admin_users_list' %}" class="sidebar-link active"><i class="fa-solid fa-users"></i> Manage Users</a></li>
+                <li><a href="{% url 'admin_messages' %}" class="sidebar-link"><i class="fa-regular fa-envelope"></i> Feedback / Messages</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="sidebar-title">Reports Export</div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'export_report' 'users' 'pdf' %}" class="sidebar-link"><i class="fa-solid fa-file-pdf"></i> Users PDF</a></li>
+                <li><a href="{% url 'export_report' 'users' 'excel' %}" class="sidebar-link"><i class="fa-solid fa-file-excel"></i> Users Excel</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 1.75rem; font-weight: 800;">User Accounts Management</h1>
+            <p style="color: var(--text-secondary);">Suspend accounts, activate services, or toggle approvals for orphanages.</p>
+        </div>
+
+        <!-- Donors Directory -->
+        <div class="glass-card" style="margin-bottom: 2rem; background: var(--bg-secondary);">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-user-check" style="color: var(--primary);"></i>
+                Donors Directory
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Username</th>
+                            <th>Donor Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for donor in donors %}
+                            <tr>
+                                <td>#{{ donor.user.id }}</td>
+                                <td style="font-weight: 600;">{{ donor.user.username }}</td>
+                                <td>{{ donor.full_name }}</td>
+                                <td>{{ donor.user.email }}</td>
+                                <td>{{ donor.phone_number }}</td>
+                                <td>
+                                    <span class="badge {% if donor.user.is_active %}badge-completed{% else %}badge-urgent{% endif %}">
+                                        {% if donor.user.is_active %}Active{% else %}Suspended{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button onclick="confirmAction('{% url 'admin_toggle_suspension' donor.user.id %}', '{% if donor.user.is_active %}Suspend{% else %}Unsuspend{% endif %} User?', 'This changes their access permissions immediately.', 'Change status')" class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; height: auto; {% if donor.user.is_active %}color:var(--danger); border-color:var(--danger-light);{% else %}color:var(--success); border-color:var(--success-light);{% endif %}">
+                                        {% if donor.user.is_active %}Suspend{% else %}Unsuspend{% endif %}
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Orphanages Directory -->
+        <div class="glass-card" style="background: var(--bg-secondary);">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-hotel" style="color: var(--primary);"></i>
+                Orphanages Directory
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Orphanage Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Approved</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for orphanage in orphanages %}
+                            <tr>
+                                <td>#{{ orphanage.user.id }}</td>
+                                <td style="font-weight: 600;">{{ orphanage.orphanage_name }}</td>
+                                <td>{{ orphanage.user.email }}</td>
+                                <td>{{ orphanage.phone }}</td>
+                                <td>
+                                    <span class="badge {% if orphanage.is_approved %}badge-completed{% else %}badge-pending{% endif %}">
+                                        {% if orphanage.is_approved %}Yes{% else %}Pending{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if orphanage.user.is_active %}badge-completed{% else %}badge-urgent{% endif %}">
+                                        {% if orphanage.user.is_active %}Active{% else %}Suspended{% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display: flex; gap: 0.25rem;">
+                                        <button onclick="confirmAction('{% url 'admin_toggle_approval' orphanage.id %}', '{% if orphanage.is_approved %}Revoke approval?{% else %}Approve orphanage?{% endif %}', 'This updates request rights.', 'Change status')" class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; height: auto;">
+                                            {% if orphanage.is_approved %}Revoke{% else %}Approve{% endif %}
+                                        </button>
+                                        <button onclick="confirmAction('{% url 'admin_toggle_suspension' orphanage.user.id %}', '{% if orphanage.user.is_active %}Suspend{% else %}Unsuspend{% endif %} User?', 'This changes their login capability immediately.', 'Change status')" class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; height: auto; {% if orphanage.user.is_active %}color:var(--danger); border-color:var(--danger-light);{% else %}color:var(--success); border-color:var(--success-light);{% endif %}">
+                                            {% if orphanage.user.is_active %}Suspend{% else %}Unsuspend{% endif %}
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

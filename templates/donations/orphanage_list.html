@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Explore Orphanages - Helping Hands{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; padding-bottom: 4rem;">
+    <!-- Headings -->
+    <div style="margin-bottom: 2.5rem; text-align: center;">
+        <h1 style="font-size: 2.25rem; font-weight: 800;">Verified Orphanages Directory</h1>
+        <p style="color: var(--text-secondary); max-width: 600px; margin: 0.5rem auto 0 auto;">Connect directly with approved orphanages. View their full profiles, read donor feedback, and review active donation requests.</p>
+    </div>
+
+    <!-- AJAX Filters Form -->
+    <div class="search-sidebar">
+        <form id="search-form" data-endpoint="{% url 'orphanage_list' %}" data-target="orphanages-container">
+            <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; flex-wrap: wrap;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="search-input">Search Orphanage Name or Keyword</label>
+                    <div style="position: relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-light);"></i>
+                        <input type="text" id="search-input" name="q" class="form-control" style="padding-left: 2.25rem;" placeholder="Keywords...">
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="location-filter">Location</label>
+                    <div style="position: relative;">
+                        <i class="fa-solid fa-location-dot" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-light);"></i>
+                        <input type="text" id="location-filter" name="location" class="form-control" style="padding-left: 2.25rem;" placeholder="City/State...">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Orphanages Grid -->
+    <div id="orphanages-container" class="list-grid">
+        {% include 'donations/includes/orphanage_list_items.html' %}
+    </div>
+</div>
+{% endblock %}

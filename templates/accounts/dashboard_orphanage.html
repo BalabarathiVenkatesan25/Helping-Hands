@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+{% block title %}Orphanage Dashboard - Helping Hands{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-title">Orphanage Menu</div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'orphanage_dashboard' %}" class="sidebar-link active"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="{% url 'request_create' %}" class="sidebar-link"><i class="fa-solid fa-plus"></i> Create Request</a></li>
+                <li><a href="{% url 'profile' %}" class="sidebar-link"><i class="fa-regular fa-user"></i> Profile Details</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="sidebar-title">System Activity</div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'notifications_list' %}" class="sidebar-link"><i class="fa-regular fa-bell"></i> Notifications</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.75rem; font-weight: 800;">{{ orphanage.orphanage_name }}</h1>
+                <p style="color: var(--text-secondary);">Manage your donation requests and accept incoming donations.</p>
+            </div>
+            <a href="{% url 'request_create' %}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> New Request</a>
+        </div>
+
+        <!-- Metric Widgets -->
+        <div class="widget-grid">
+            <div class="widget-card">
+                <div class="widget-info">
+                    <h3>Total Requests</h3>
+                    <p>{{ total_requests }}</p>
+                </div>
+                <div class="widget-icon"><i class="fa-solid fa-clipboard-list"></i></div>
+            </div>
+            
+            <div class="widget-card">
+                <div class="widget-info">
+                    <h3>Open Requests</h3>
+                    <p>{{ pending_requests }}</p>
+                </div>
+                <div class="widget-icon" style="background-color: var(--info-light); color: var(--info);"><i class="fa-regular fa-folder-open"></i></div>
+            </div>
+            
+            <div class="widget-card">
+                <div class="widget-info">
+                    <h3>Completed Requests</h3>
+                    <p>{{ completed_requests }}</p>
+                </div>
+                <div class="widget-icon" style="background-color: var(--success-light); color: var(--success);"><i class="fa-solid fa-check-double"></i></div>
+            </div>
+            
+            <div class="widget-card">
+                <div class="widget-info">
+                    <h3>Recent Donations</h3>
+                    <p>{{ recent_donations.count }}</p>
+                </div>
+                <div class="widget-icon" style="background-color: var(--warning-light); color: var(--warning);"><i class="fa-solid fa-hand-holding-hand"></i></div>
+            </div>
+        </div>
+
+        <!-- Analytics Charts Grid -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; flex-wrap: wrap;">
+                <div class="glass-card" style="background: var(--bg-secondary);">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Requests Created & Received Timeline</h3>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="orphanageTimelineChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="glass-card" style="background: var(--bg-secondary);">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Fulfillment Ratios</h3>
+                    <div style="height: 250px; position: relative;">
+                        <canvas id="orphanageFulfillmentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Incoming Donations Section -->
+        <div class="glass-card" style="margin-bottom: 2rem; background: var(--bg-secondary);">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-hand-holding-dollar" style="color: var(--primary);"></i>
+                Incoming Donations & Actions
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Donor Name</th>
+                            <th>Target Request</th>
+                            <th>Donation details</th>
+                            <th>Current Status</th>
+                            <th>Action Controls</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_donations %}
+                            {% for don in recent_donations %}
+                                <tr>
+                                    <td style="font-weight: 600;">{{ don.donor.full_name }}</td>
+                                    <td>
+                                        {% if don.request %}
+                                            <a href="{% url 'request_detail' don.request.id %}" style="color: var(--primary);">{{ don.request.title }}</a>
+                                        {% else %}
+                                            General Donation
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if don.donation_type == 'Money' %}
+                                            ${{ don.amount }} (Money)
+                                        {% else %}
+                                            {{ don.quantity_donated }} Items
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if don.status == 'Pending' %}badge-pending
+                                            {% elif don.status == 'Accepted' %}badge-accepted
+                                            {% elif don.status == 'In Transit' %}badge-intransit
+                                            {% elif don.status == 'Delivered' %}badge-delivered
+                                            {% else %}badge-completed{% endif %}">
+                                            {{ don.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if don.status != 'Completed' %}
+                                            <form method="POST" action="{% url 'update_donation_status' don.id %}" style="display: inline-block;">
+                                                {% csrf_token %}
+                                                <select name="status" class="form-control" style="width: auto; display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.8rem; height: auto;" onchange="this.form.submit()">
+                                                    <option value="" disabled selected>Update to...</option>
+                                                    {% if don.status == 'Pending' %}
+                                                        <option value="Accepted">Accept Offer</option>
+                                                    {% elif don.status == 'Accepted' %}
+                                                        <option value="In Transit">In Transit</option>
+                                                    {% elif don.status == 'In Transit' %}
+                                                        <option value="Delivered">Delivered</option>
+                                                    {% elif don.status == 'Delivered' %}
+                                                        <option value="Completed">Mark Completed</option>
+                                                    {% endif %}
+                                                </select>
+                                            </form>
+                                        {% else %}
+                                            <span style="color: var(--success); font-size: 0.8rem;"><i class="fa-solid fa-circle-check"></i> Finalized</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-secondary);">
+                                    No incoming donations recorded yet.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- My Requests Listing -->
+        <div class="glass-card" style="background: var(--bg-secondary);">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-list-check" style="color: var(--primary);"></i>
+                My Published Donation Requests
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Request Title</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Fulfillment Progress</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if my_requests %}
+                            {% for req in my_requests %}
+                                <tr>
+                                    <td style="font-weight: 600;"><a href="{% url 'request_detail' req.id %}" style="color: var(--text-primary);">{{ req.title }}</a></td>
+                                    <td>{{ req.category.name|default:"General" }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if req.priority == 'Low' %}badge-low
+                                            {% elif req.priority == 'Medium' %}badge-medium
+                                            {% elif req.priority == 'High' %}badge-high
+                                            {% else %}badge-urgent{% endif %}">
+                                            {{ req.priority }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div class="progress-bar-container" style="width: 100px; margin: 0;">
+                                                <div class="progress-bar" style="width: {{ req.fulfillment_percentage }}%;"></div>
+                                            </div>
+                                            <span style="font-size: 0.8rem; font-weight:600;">{{ req.fulfillment_percentage }}%</span>
+                                        </div>
+                                        <small style="color: var(--text-secondary); font-size: 0.7rem;">{{ req.quantity_fulfilled }} of {{ req.quantity_needed }} met</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if req.status == 'Open' %}badge-accepted{% elif req.status == 'In Progress' %}badge-pending{% else %}badge-completed{% endif %}">
+                                            {{ req.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display: flex; gap: 0.25rem;">
+                                            <a href="{% url 'request_edit' req.id %}" class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; height: auto;">
+                                                Edit
+                                            </a>
+                                            <button onclick="confirmAction('{% url 'request_delete' req.id %}', 'Delete Request?', 'This request and all its donation offers will be permanently deleted.', 'Delete')" class="btn btn-outline" style="padding: 0.35rem 0.6rem; font-size: 0.75rem; height: auto; color: var(--danger); border-color: var(--danger-light);">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-secondary);">
+                                    You have not created any requests yet. Click "New Request" above to ask for support!
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fetch Orphanage Analytics
+        fetch("{% url 'analytics_orphanage_json' %}")
+            .then(res => res.json())
+            .then(data => {
+                // 1. Timeline Chart
+                new Chart(document.getElementById('orphanageTimelineChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.requests.labels,
+                        datasets: [
+                            {
+                                label: 'Requests Created',
+                                data: data.requests.data,
+                                backgroundColor: '#4f46e5'
+                            },
+                            {
+                                label: 'Donations Received',
+                                data: data.donations.data,
+                                backgroundColor: '#10b981'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+
+                // 2. Fulfillment Ratios Pie Chart
+                new Chart(document.getElementById('orphanageFulfillmentChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: data.fulfillment.labels,
+                        datasets: [{
+                            data: data.fulfillment.data,
+                            backgroundColor: ['#0ea5e9', '#10b981']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            })
+            .catch(err => console.error("Error loading orphanage charts:", err));
+    });
+</script>
+{% endblock %}

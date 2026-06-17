@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}{{ request_item.title }} - Request Details{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; padding-bottom: 5rem; max-width: 900px;">
+    <!-- Breadcrumb back -->
+    <div style="margin-bottom: 1.5rem;">
+        <a href="{% url 'request_list' %}" style="color: var(--primary); font-weight: 600;"><i class="fa-solid fa-arrow-left-long"></i> Back to Requirements</a>
+    </div>
+
+    <!-- Header section -->
+    <div class="glass-card" style="background: var(--bg-secondary); margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <span class="badge badge-medium" style="background-color: var(--primary-light); color: var(--primary); margin-bottom: 0.5rem;"><i class="fa-solid fa-tag"></i> {{ request_item.category.name|default:"General" }}</span>
+                <span class="badge 
+                    {% if request_item.priority == 'Low' %}badge-low
+                    {% elif request_item.priority == 'Medium' %}badge-medium
+                    {% elif request_item.priority == 'High' %}badge-high
+                    {% else %}badge-urgent{% endif %}">
+                    <i class="fa-solid fa-triangle-exclamation"></i> {{ request_item.priority }}
+                </span>
+                
+                <h1 style="font-size: 1.85rem; font-weight: 800; line-height: 1.3; color: var(--text-primary); margin-top: 0.25rem;">{{ request_item.title }}</h1>
+                
+                <!-- Orphanage Details link -->
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 5px; font-weight: 600;">
+                    <i class="fa-solid fa-hotel"></i> Requested by: 
+                    <a href="{% url 'orphanage_detail' request_item.orphanage.id %}" style="color: var(--primary); text-decoration: underline;">
+                        {{ request_item.orphanage.orphanage_name }}
+                    </a>
+                </p>
+            </div>
+            
+            <div style="text-align: right; font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">
+                <div><i class="fa-regular fa-calendar"></i> Deadline: <strong>{{ request_item.deadline|date:"M d, Y" }}</strong></div>
+                <div style="margin-top: 5px;">Status: 
+                    <span class="badge {% if request_item.status == 'Open' %}badge-accepted{% elif request_item.status == 'In Progress' %}badge-pending{% else %}badge-completed{% endif %}">
+                        {{ request_item.status }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div style="margin-bottom: 2rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">Description</h3>
+            <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem;">
+                {{ request_item.description }}
+            </p>
+        </div>
+
+        <!-- Optional image -->
+        {% if request_item.image %}
+            <div style="margin-bottom: 2rem; border-radius: 1rem; overflow: hidden; max-height: 350px; border: 1px solid var(--border-color);">
+                <img src="{{ request_item.image.url }}" alt="{{ request_item.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        {% endif %}
+
+        <!-- Fulfillment summary -->
+        <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 0.75rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 1rem; margin-bottom: 0.5rem;">
+                <span>Fulfillment Progress</span>
+                <span style="color: var(--primary);">{{ request_item.fulfillment_percentage }}% satisfied</span>
+            </div>
+            
+            <div class="progress-bar-container" style="height: 10px; margin: 0 0 0.5rem 0;">
+                <div class="progress-bar" style="width: {{ request_item.fulfillment_percentage }}%;"></div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary);">
+                <span>Requested Quantity: <strong>{{ request_item.quantity_needed }} items</strong></span>
+                <span>Fulfilled: <strong>{{ request_item.quantity_fulfilled }} items</strong></span>
+            </div>
+        </div>
+
+        <!-- Call-to-action buttons for Donors -->
+        {% if user.is_authenticated %}
+            {% if user.is_donor %}
+                {% if request_item.status != 'Completed' %}
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="{% url 'donate_items' request_item.id %}" class="btn btn-primary" style="flex-grow: 1; height: 46px;">
+                            <i class="fa-solid fa-gift"></i> Donate Physical Items
+                        </a>
+                        <a href="{% url 'donate_money_request' request_item.id %}" class="btn btn-secondary" style="flex-grow: 1; height: 46px;">
+                            <i class="fa-solid fa-hand-holding-dollar"></i> Donate Money (Simulation)
+                        </a>
+                    </div>
+                {% else %}
+                    <div style="background-color: var(--success-light); color: var(--success); padding: 1rem; border-radius: 0.5rem; text-align: center; font-weight: 700; border: 1px solid var(--success);">
+                        <i class="fa-solid fa-circle-check"></i> This request has been fully satisfied. Thank you for your support!
+                    </div>
+                {% endif %}
+            {% elif user.is_orphanage and user.orphanage_profile == request_item.orphanage %}
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="{% url 'request_edit' request_item.id %}" class="btn btn-outline"><i class="fa-solid fa-pen-to-square"></i> Edit Request</a>
+                    <button onclick="confirmAction('{% url 'request_delete' request_item.id %}', 'Delete Request?', 'This request will be permanently removed.', 'Delete')" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger-light);">
+                        <i class="fa-regular fa-trash-can"></i> Delete Request
+                    </button>
+                </div>
+            {% endif %}
+        {% else %}
+            <div style="background-color: var(--primary-light); color: var(--primary); padding: 1.25rem; border-radius: 0.5rem; text-align: center; border: 1px dashed var(--primary);">
+                Please <a href="{% url 'login' %}" style="font-weight: 700; text-decoration: underline;">log in as a Donor</a> to donate items or money to this orphanage request.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Log of donations for this request -->
+    <div class="glass-card" style="background: var(--bg-secondary);">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-truck-ramp-box" style="color: var(--primary);"></i>
+            Donation Contributions History
+        </h3>
+        
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Donor</th>
+                        <th>Type</th>
+                        <th>Donated</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if donations %}
+                        {% for d in donations %}
+                            <tr>
+                                <td style="font-weight: 600;">{{ d.donor.full_name }}</td>
+                                <td>{{ d.donation_type }}</td>
+                                <td>
+                                    {% if d.donation_type == 'Money' %}
+                                        ${{ d.amount }}
+                                    {% else %}
+                                        {{ d.quantity_donated }} items
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        {% if d.status == 'Pending' %}badge-pending
+                                        {% elif d.status == 'Accepted' %}badge-accepted
+                                        {% elif d.status == 'In Transit' %}badge-intransit
+                                        {% elif d.status == 'Delivered' %}badge-delivered
+                                        {% else %}badge-completed{% endif %}">
+                                        {{ d.status }}
+                                    </span>
+                                </td>
+                                <td>{{ d.created_at|date:"M d, Y" }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-secondary);">
+                                No donations offered for this request yet. Be the first to donate!
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

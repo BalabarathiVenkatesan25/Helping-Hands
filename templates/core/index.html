@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% block title %}Helping Hands - Connecting Donors & Orphanages{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+    <div class="hero">
+        <div class="hero-content">
+            <h1 style="color: var(--text-primary);">Connecting Kind Hearts with <span style="color: var(--primary);">Orphanages</span> in Need.</h1>
+            <p>Helping Hands is a transparent platform that enables orphanage centers to post their vital requirements and empowers donors to fulfill them seamlessly. Join us to make a difference today.</p>
+            <div class="hero-buttons">
+                <a href="{% url 'request_list' %}" class="btn btn-primary"><i class="fa-solid fa-heart"></i> Donate Now</a>
+                <a href="{% url 'orphanage_list' %}" class="btn btn-outline"><i class="fa-solid fa-hotel"></i> Explore Orphanages</a>
+            </div>
+        </div>
+        <div style="text-align: center;">
+            <div style="background-color: var(--primary-light); padding: 2rem; border-radius: 2rem; border: 1.5px dashed var(--primary); display: inline-block; max-width: 420px; text-align: left; box-shadow: var(--shadow-lg);">
+                <i class="fa-solid fa-handshake-angle" style="font-size: 3rem; color: var(--primary); margin-bottom: 1.5rem;"></i>
+                <h3 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">Be the Reason a Child Smiles Today</h3>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.6;">Your contributions support educational resources, meals, toy kits, clothes, and medical supplies for registered, verified orphanages.</p>
+                <div style="display: flex; gap: 8px; align-items: center; font-size: 0.85rem; font-weight: 700; color: var(--primary);">
+                    <i class="fa-solid fa-circle-check"></i> 100% Direct Fulfillment
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-num">{{ total_donors }}</div>
+                <div class="stat-label">Active Donors</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-num">{{ total_orphanages }}</div>
+                <div class="stat-label">Verified Orphanages</div>
+            </div>
+            
+            <div class="stat-num-container stat-item">
+                <div class="stat-num">{{ total_donations_count }}</div>
+                <div class="stat-label">Total Donations</div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-num">{{ completed_deliveries }}</div>
+                <div class="stat-label">Deliveries Complete</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="container" style="padding-top: 6rem; padding-bottom: 6rem;">
+    <div style="text-align: center; max-width: 600px; margin: 0 auto 4rem auto;">
+        <h2 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem;">How It Works</h2>
+        <p style="color: var(--text-secondary);">Connecting compassionate individuals with orphanage centers in three simple steps.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2.5rem;">
+        <div class="glass-card" style="text-align: center; background: var(--bg-secondary);">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background-color: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; margin: 0 auto 1.5rem auto;">
+                1
+            </div>
+            <h3 style="font-weight: 700; font-size: 1.15rem; margin-bottom: 0.75rem;">Orphanages Post Needs</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">Verified orphanage centers publish detailed request items stating their priority, quantity needed, and deadlines.</p>
+        </div>
+        
+        <div class="glass-card" style="text-align: center; background: var(--bg-secondary);">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background-color: rgba(249, 115, 22, 0.1); color: var(--secondary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; margin: 0 auto 1.5rem auto;">
+                2
+            </div>
+            <h3 style="font-weight: 700; font-size: 1.15rem; margin-bottom: 0.75rem;">Donors Support Requests</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">Donors browse active lists, choose specific items or monetary amounts, and click 'Donate' to initialize the workflow.</p>
+        </div>
+        
+        <div class="glass-card" style="text-align: center; background: var(--bg-secondary);">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background-color: var(--success-light); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; margin: 0 auto 1.5rem auto;">
+                3
+            </div>
+            <h3 style="font-weight: 700; font-size: 1.15rem; margin-bottom: 0.75rem;">Status Tracked Transparently</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">Donors monitor their packages from shipping up to deliveries. Orphanages verify receipt and finalize completions.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Requests Section -->
+<section style="background-color: var(--bg-secondary); padding: 6rem 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem;">Urgent Requirements</h2>
+                <p style="color: var(--text-secondary);">Urgent and high priority requirements that need immediate support.</p>
+            </div>
+            <a href="{% url 'request_list' %}" class="btn btn-outline">View All Requests</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;">
+            {% if featured_requests %}
+                {% for req in featured_requests %}
+                    <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 380px;">
+                        <div>
+                            <!-- Category and Priority -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <span class="badge badge-medium" style="background-color: var(--primary-light); color: var(--primary);"><i class="fa-solid fa-tag"></i> {{ req.category.name }}</span>
+                                <span class="badge badge-urgent"><i class="fa-solid fa-triangle-exclamation"></i> {{ req.priority }}</span>
+                            </div>
+                            
+                            <!-- Request Title -->
+                            <h3 style="font-weight: 800; font-size: 1.2rem; margin-bottom: 0.5rem; line-height: 1.4;">
+                                <a href="{% url 'request_detail' req.id %}" style="color: var(--text-primary);">{{ req.title }}</a>
+                            </h3>
+                            
+                            <!-- Orphanage Name -->
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 1rem;">
+                                <i class="fa-solid fa-hotel"></i> {{ req.orphanage.orphanage_name }}
+                            </p>
+                            
+                            <!-- Description -->
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                                {{ req.description|truncatechars:100 }}
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <!-- Progress Bar -->
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.25rem;">
+                                    <span>Fulfillment Progress</span>
+                                    <span>{{ req.fulfillment_percentage }}%</span>
+                                </div>
+                                <div class="progress-bar-container" style="margin: 0;">
+                                    <div class="progress-bar" style="width: {{ req.fulfillment_percentage }}%;"></div>
+                                </div>
+                                <small style="font-size: 0.75rem; color: var(--text-light);">{{ req.quantity_fulfilled }} of {{ req.quantity_needed }} met</small>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                                <span style="font-size: 0.8rem; color: var(--text-light);"><i class="fa-regular fa-calendar"></i> Deadline: {{ req.deadline|date:"M d, Y" }}</span>
+                                <a href="{% url 'request_detail' req.id %}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Donate</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 2rem 0;">
+                    No active urgent requests at the moment.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+{% if testimonials %}
+    <section class="container" style="padding-top: 6rem; padding-bottom: 6rem;">
+        <div style="text-align: center; max-width: 600px; margin: 0 auto 4rem auto;">
+            <h2 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem;">Community Reviews</h2>
+            <p style="color: var(--text-secondary);">Feedback left by our registered donors supporting verified orphanages.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+            {% for t in testimonials %}
+                <div class="glass-card" style="background: var(--bg-secondary); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <!-- Rating -->
+                        <div class="star-rating" style="margin-bottom: 1rem;">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= t.rating %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% else %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; font-style: italic; line-height: 1.6;">"{{ t.comment }}"</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary);">{{ t.donor.full_name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">To: {{ t.orphanage.orphanage_name }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
+{% endblock %}

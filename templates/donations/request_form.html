@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} - Helping Hands{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; padding-bottom: 4rem; max-width: 700px;">
+    <!-- Breadcrumb back -->
+    <div style="margin-bottom: 1.5rem;">
+        <a href="{% url 'dashboard' %}" style="color: var(--primary); font-weight: 600;"><i class="fa-solid fa-arrow-left-long"></i> Back to Dashboard</a>
+    </div>
+
+    <div class="glass-card" style="background: var(--bg-secondary); padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fa-solid fa-clipboard-list" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+            <h2 style="font-size: 1.75rem; font-weight: 800;">{{ title }}</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Fill out the details below to publish your orphanage's requirements.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div style="background-color: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <span style="font-size: 0.75rem; color: var(--danger);">{{ field.errors.0 }}</span>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <small style="display:block; font-size:0.75rem; color:var(--text-light); margin-top:2px;">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 46px; margin-top: 1rem;">
+                <i class="fa-solid fa-paper-plane"></i> Publish Request
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

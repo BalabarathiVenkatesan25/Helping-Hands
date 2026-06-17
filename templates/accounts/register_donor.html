@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Register as Donor - Helping Hands{% endblock %}
+
+{% block content %}
+<section style="min-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; padding: 4rem 1rem;">
+    <div class="glass-card" style="width: 100%; max-width: 600px; padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fa-solid fa-user-plus" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+            <h2 style="font-size: 1.75rem; font-weight: 800;">Register as Donor</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Create a donor account to start supporting orphanage requests.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" action="{% url 'register_donor' %}">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div style="background-color: var(--danger-light); color: var(--danger); border: 1px solid var(--danger); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="{{ form.username.id_for_label }}">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <span style="font-size: 0.75rem; color: var(--danger);">{{ form.username.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">Email Address</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <span style="font-size: 0.75rem; color: var(--danger);">{{ form.email.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}">Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <span style="font-size: 0.75rem; color: var(--danger);">{{ form.password.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.confirm_password.id_for_label }}">Confirm Password</label>
+                    {{ form.confirm_password }}
+                    {% if form.confirm_password.errors %}
+                        <span style="font-size: 0.75rem; color: var(--danger);">{{ form.confirm_password.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr style="border:none; border-top:1px solid var(--border-color); margin: 1.5rem 0;">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="{{ form.full_name.id_for_label }}">Full Name</label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}
+                        <span style="font-size: 0.75rem; color: var(--danger);">{{ form.full_name.errors.0 }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+                    {{ form.phone_number }}
+                    {% if form.phone_number.errors %}
+                        <span style="font-size: 0.75rem; color: var(--danger);">{{ form.phone_number.errors.0 }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.address.id_for_label }}">Address</label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <span style="font-size: 0.75rem; color: var(--danger);">{{ form.address.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.profile_picture.id_for_label }}">Profile Picture</label>
+                {{ form.profile_picture }}
+                {% if form.profile_picture.errors %}
+                    <span style="font-size: 0.75rem; color: var(--danger);">{{ form.profile_picture.errors.0 }}</span>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 46px; margin-top: 1rem;">
+                <i class="fa-solid fa-user-plus"></i> Register
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            Already have an account? <a href="{% url 'login' %}" style="color: var(--primary); font-weight: 600;">Log in</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

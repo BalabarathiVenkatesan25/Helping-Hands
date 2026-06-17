@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Login - Helping Hands{% endblock %}
+
+{% block content %}
+<section style="min-height: calc(100vh - 140px); display: flex; align-items: center; justify-content: center; padding: 4rem 1rem;">
+    <div class="glass-card" style="width: 100%; max-width: 450px; padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fa-solid fa-right-to-bracket" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;"></i>
+            <h2 style="font-size: 1.75rem; font-weight: 800;">Welcome Back</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.25rem;">Log in to manage your connections and requests.</p>
+        </div>
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div style="position: relative;">
+                    <i class="fa-regular fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light);"></i>
+                    <input type="text" id="username" name="username" class="form-control" style="padding-left: 2.5rem;" placeholder="Enter username" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label for="password">Password</label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light);"></i>
+                    <input type="password" id="password" name="password" class="form-control" style="padding-left: 2.5rem;" placeholder="Enter password" required>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-size: 0.85rem;">
+                <label style="display: flex; align-items: center; gap: 5px; color: var(--text-secondary); cursor: pointer;">
+                    <input type="checkbox" name="remember" style="accent-color: var(--primary);"> Remember me
+                </label>
+                <a href="#" style="color: var(--primary); font-weight: 500;">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; height: 46px;">
+                <i class="fa-solid fa-right-to-bracket"></i> Login
+            </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            Don't have an account? <br>
+            <span style="display: inline-block; margin-top: 5px;">
+                Register as <a href="{% url 'register_donor' %}" style="color: var(--primary); font-weight: 600;">Donor</a> or 
+                <a href="{% url 'register_orphanage' %}" style="color: var(--primary); font-weight: 600;">Orphanage</a>
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock %}

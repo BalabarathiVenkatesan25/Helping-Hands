@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}Profile Settings - Helping Hands{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; padding-bottom: 4rem;">
+    <div style="margin-bottom: 2rem;">
+        <h1 style="font-size: 2rem; font-weight: 800;">Profile Settings</h1>
+        <p style="color: var(--text-secondary);">Manage your profile details, contact information, and security preferences.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: start;">
+        {% if user.is_donor or user.is_orphanage %}
+            <!-- Left Side Info / Progress -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+                <!-- Profile Completion -->
+                <div class="profile-completion">
+                    <div class="profile-completion-header">
+                        <span>Profile Completion</span>
+                        <span>{{ completion_percentage }}%</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ completion_percentage }}%;"></div>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        {% if completion_percentage < 100 %}
+                            Complete your profile details (including avatar/images) to build trust in the community.
+                        {% else %}
+                            Your profile is fully complete! Thank you for maintaining accurate information.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Forms Grid -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+            <!-- Profile Details Form -->
+            <div class="glass-card" style="background: var(--bg-secondary);">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-regular fa-address-card" style="color: var(--primary);"></i>
+                    Update Personal Information
+                </h3>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+                    
+                    <div class="form-group">
+                        <label for="{{ email_form.email.id_for_label }}">Email Address</label>
+                        {{ email_form.email }}
+                        {% if email_form.email.errors %}
+                            <span style="font-size: 0.75rem; color: var(--danger);">{{ email_form.email.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if profile_form %}
+                        {% for field in profile_form %}
+                            <div class="form-group">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <span style="font-size: 0.75rem; color: var(--danger);">{{ field.errors.0 }}</span>
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <small style="display:block; font-size:0.75rem; color:var(--text-light); margin-top:2px;">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-primary" style="height: 42px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Profile
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Security Form -->
+            <div class="glass-card" style="background: var(--bg-secondary);">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-key" style="color: var(--primary);"></i>
+                    Change Password
+                </h3>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+                    
+                    {% for field in password_form %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <span style="font-size: 0.75rem; color: var(--danger);">{{ field.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <button type="submit" class="btn btn-outline" style="height: 42px;">
+                        <i class="fa-solid fa-shield-halved"></i> Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

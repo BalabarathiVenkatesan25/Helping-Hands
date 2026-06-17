@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% block title %}Donor Dashboard - Helping Hands{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="sidebar-title">Donor Menu</div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'donor_dashboard' %}" class="sidebar-link active"><i class="fa-solid fa-chart-pie"></i> Overview</a></li>
+                <li><a href="{% url 'orphanage_list' %}" class="sidebar-link"><i class="fa-solid fa-hotel"></i> View Orphanages</a></li>
+                <li><a href="{% url 'request_list' %}" class="sidebar-link"><i class="fa-solid fa-hands-holding-child"></i> View Requests</a></li>
+                <li><a href="{% url 'profile' %}" class="sidebar-link"><i class="fa-regular fa-user"></i> Profile Details</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="sidebar-title">System Activity</div>
+            <ul class="sidebar-menu">
+                <li><a href="{% url 'notifications_list' %}" class="sidebar-link"><i class="fa-regular fa-bell"></i> Notifications</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 style="font-size: 1.75rem; font-weight: 800;">Welcome, {{ donor.full_name }}</h1>
+                <p style="color: var(--text-secondary);">Here is your donation activity and recent updates.</p>
+            </div>
+            <a href="{% url 'request_list' %}" class="btn btn-primary"><i class="fa-solid fa-heart"></i> Make a Donation</a>
+        </div>
+
+        <!-- Metric Widgets -->
+        <div class="widget-grid">
+            <div class="widget-card">
+                <div class="widget-info">
+                    <h3>Total Donations</h3>
+                    <p>{{ total_donations }}</p>
+                </div>
+                <div class="widget-icon"><i class="fa-solid fa-gift"></i></div>
+            </div>
+            
+            <div class="widget-card">
+                <div class="widget-info">
+                    <h3>Active Donations</h3>
+                    <p>{{ active_donations }}</p>
+                </div>
+                <div class="widget-icon" style="background-color: var(--info-light); color: var(--info);"><i class="fa-solid fa-spinner fa-spin-pulse"></i></div>
+            </div>
+            
+            <div class="widget-card">
+                <div class="widget-info">
+                    <h3>Completed Deliveries</h3>
+                    <p>{{ completed_donations }}</p>
+                </div>
+                <div class="widget-icon" style="background-color: var(--success-light); color: var(--success);"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+            
+            <div class="widget-card">
+                <div class="widget-info">
+                    <h3>Favorite Orphanages</h3>
+                    <p>{{ favorites.count }}</p>
+                </div>
+                <div class="widget-icon" style="background-color: rgba(236, 72, 153, 0.1); color: #ec4899;"><i class="fa-solid fa-star"></i></div>
+            </div>
+        </div>
+
+        <!-- Analytics Charts Grid -->
+        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="glass-card" style="background: var(--bg-secondary);">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">My Donation Timeline</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="donorHistoryChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="glass-card" style="background: var(--bg-secondary);">
+                <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem;">Donations by Categories</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="donorCategoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Donations Tracking Table -->
+        <div class="glass-card" style="margin-bottom: 2rem; background: var(--bg-secondary);">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-truck" style="color: var(--primary);"></i>
+                Track My Donations
+            </h3>
+            
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Recipient Request</th>
+                            <th>Orphanage</th>
+                            <th>Donated Value</th>
+                            <th>Status Tracking</th>
+                            <th>Date Offered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_donations %}
+                            {% for don in recent_donations %}
+                                <tr>
+                                    <td style="font-weight: 600;">
+                                        {% if don.request %}
+                                            <a href="{% url 'request_detail' don.request.id %}" style="color: var(--primary);">{{ don.request.title }}</a>
+                                        {% else %}
+                                            General Money Donation
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if don.request %}
+                                            <a href="{% url 'orphanage_detail' don.request.orphanage.id %}" style="color:var(--text-secondary); text-decoration:underline;">
+                                                {{ don.request.orphanage.orphanage_name }}
+                                            </a>
+                                        {% else %}
+                                            Helping Hands
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if don.donation_type == 'Money' %}
+                                            ${{ don.amount }} (Money)
+                                        {% else %}
+                                            {{ don.quantity_donated }} Items
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if don.status == 'Pending' %}badge-pending
+                                            {% elif don.status == 'Accepted' %}badge-accepted
+                                            {% elif don.status == 'In Transit' %}badge-intransit
+                                            {% elif don.status == 'Delivered' %}badge-delivered
+                                            {% else %}badge-completed{% endif %}">
+                                            {{ don.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ don.created_at|date:"M d, Y" }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-secondary);">
+                                    You have not made any donations yet. Click "Make a Donation" above to help!
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Saved Favorites list -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            <div class="glass-card" style="background: var(--bg-secondary);">
+                <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-star" style="color: var(--secondary);"></i>
+                    Favorite Orphanages
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                    {% if favorites %}
+                        {% for fav in favorites %}
+                            <div class="glass-card" style="padding: 1rem; border: 1px solid var(--border-color); display: flex; gap: 10px; align-items: center; position: relative;">
+                                <img src="{{ fav.orphanage.profile_image.url }}" alt="{{ fav.orphanage.orphanage_name }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
+                                <div>
+                                    <h4 style="font-weight: 700; font-size: 0.95rem;">
+                                        <a href="{% url 'orphanage_detail' fav.orphanage.id %}" style="color: var(--text-primary);">{{ fav.orphanage.orphanage_name }}</a>
+                                    </h4>
+                                    <p style="font-size: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-location-dot"></i> {{ fav.orphanage.address|truncatechars:35 }}</p>
+                                    <div class="star-rating" style="margin-top: 2px; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-star"></i> {{ fav.orphanage.average_rating }} ({{ fav.orphanage.reviews_count }})
+                                    </div>
+                                </div>
+                                <button class="btn-favorite active" data-id="{{ fav.orphanage.id }}" style="position: absolute; right: 10px; top: 10px; border: none; background: none; font-size: 1.1rem; color: var(--secondary); cursor: pointer;">
+                                    <i class="fa-solid fa-star"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="color: var(--text-secondary); font-size: 0.9rem; padding: 0.5rem 0;">
+                            No favorite orphanages saved yet. Visit the <a href="{% url 'orphanage_list' %}" style="color: var(--primary); font-weight: 600;">Orphanages page</a> to bookmark your preferences.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Fetch Donor Analytics
+        fetch("{% url 'analytics_donor_json' %}")
+            .then(res => res.json())
+            .then(data => {
+                // 1. Donation Timeline (Monthly counts)
+                new Chart(document.getElementById('donorHistoryChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.donations.labels,
+                        datasets: [{
+                            label: 'Donation History',
+                            data: data.donations.data,
+                            backgroundColor: '#4f46e5'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+
+                // 2. Categories Distribution
+                new Chart(document.getElementById('donorCategoryChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.categories.labels,
+                        datasets: [{
+                            data: data.categories.data,
+                            backgroundColor: ['#4f46e5', '#f97316', '#10b981', '#0ea5e9', '#8b5cf6', '#ef4444']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            })
+            .catch(err => console.error("Error loading donor charts:", err));
+    });
+</script>
+{% endblock %}

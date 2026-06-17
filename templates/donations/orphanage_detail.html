@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}{{ orphanage.orphanage_name }} - Helping Hands{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 3rem; padding-bottom: 5rem;">
+    <!-- Breadcrumbs / Back button -->
+    <div style="margin-bottom: 1.5rem;">
+        <a href="{% url 'orphanage_list' %}" style="color: var(--primary); font-weight: 600;"><i class="fa-solid fa-arrow-left-long"></i> Back to Directory</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: start;">
+        <!-- Left Side Column: Profile Card & Review Form -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+            <!-- Profile Info Card -->
+            <div class="glass-card" style="background: var(--bg-secondary); text-align: center; padding: 2.5rem 1.5rem;">
+                <img src="{{ orphanage.profile_image.url }}" alt="{{ orphanage.orphanage_name }}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-light); margin: 0 auto 1.5rem auto;">
+                
+                <h1 style="font-size: 1.75rem; font-weight: 800; line-height: 1.2; color: var(--text-primary);">{{ orphanage.orphanage_name }}</h1>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.5rem;"><i class="fa-solid fa-location-dot"></i> {{ orphanage.address }}</p>
+                
+                <!-- Ratings Summary -->
+                <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin: 1.25rem 0; font-size: 1rem;">
+                    <div class="star-rating" style="font-size: 1.15rem;">
+                        <i class="fa-solid fa-star"></i> {{ orphanage.average_rating }}
+                    </div>
+                    <span style="color: var(--text-secondary); font-weight: 500;">({{ orphanage.reviews_count }} verified reviews)</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px; text-align: left; background-color: var(--bg-primary); padding: 1.25rem; border-radius: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);"><i class="fa-solid fa-phone" style="width: 18px; color:var(--primary);"></i> <strong>Phone:</strong> {{ orphanage.phone }}</div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);"><i class="fa-solid fa-envelope" style="width: 18px; color:var(--primary);"></i> <strong>Email:</strong> {{ orphanage.user.email }}</div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);"><i class="fa-solid fa-file-shield" style="width: 18px; color:var(--primary);"></i> <strong>Verification:</strong> <span class="badge badge-completed">Approved Center</span></div>
+                </div>
+
+                {% if user.is_authenticated and user.is_donor %}
+                    <button class="btn btn-favorite {% if is_favorited %}active{% endif %}" data-id="{{ orphanage.id }}" style="width: 100%;">
+                        <i class="{% if is_favorited %}fa-solid{% else %}fa-regular{% endif %} fa-star"></i> 
+                        {% if is_favorited %}Remove from Favorites{% else %}Save to Favorites{% endif %}
+                    </button>
+                {% endif %}
+            </div>
+
+            <!-- Write Review Form (For Donors only) -->
+            {% if user.is_authenticated and user.is_donor %}
+                <div class="glass-card" style="background: var(--bg-secondary);">
+                    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-regular fa-comment-dots" style="color: var(--primary);"></i>
+                        Write Feedback
+                    </h3>
+                    
+                    <form method="POST" action="{% url 'submit_review' orphanage.id %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="{{ review_form.rating.id_for_label }}">Rating Score</label>
+                            {{ review_form.rating }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ review_form.comment.id_for_label }}">Review Details</label>
+                            {{ review_form.comment }}
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Side Column: About, Requests, Reviews -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+            <!-- About Section -->
+            <div class="glass-card" style="background: var(--bg-secondary);">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                    About the Orphanage
+                </h3>
+                <p style="color: var(--text-secondary); line-height: 1.7; font-size: 1rem;">
+                    {{ orphanage.description }}
+                </p>
+            </div>
+
+            <!-- Active Requests list -->
+            <div class="glass-card" style="background: var(--bg-secondary);">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Active Requests</span>
+                    <span class="badge badge-medium" style="background-color: var(--primary-light); color: var(--primary);">{{ requests.count }} open</span>
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+                    {% if requests %}
+                        {% for req in requests %}
+                            <div style="padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 0.75rem; display: flex; flex-direction: column; justify-content: space-between; gap: 1rem; background-color: var(--bg-primary);">
+                                <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 0.5rem;">
+                                    <div>
+                                        <h4 style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.25rem;">
+                                            <a href="{% url 'request_detail' req.id %}" style="color: var(--text-primary);">{{ req.title }}</a>
+                                        </h4>
+                                        <span class="badge badge-medium" style="background-color: var(--primary-light); color: var(--primary); font-size: 0.7rem;"><i class="fa-solid fa-tag"></i> {{ req.category.name }}</span>
+                                        <span class="badge 
+                                            {% if req.priority == 'Low' %}badge-low
+                                            {% elif req.priority == 'Medium' %}badge-medium
+                                            {% elif req.priority == 'High' %}badge-high
+                                            {% else %}badge-urgent{% endif %}" style="font-size: 0.7rem;">
+                                            <i class="fa-solid fa-triangle-exclamation"></i> {{ req.priority }}
+                                        </span>
+                                    </div>
+                                    <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 500;"><i class="fa-regular fa-calendar"></i> Deadline: {{ req.deadline|date:"M d, Y" }}</span>
+                                </div>
+                                
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">{{ req.description|truncatechars:150 }}</p>
+                                
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div class="progress-bar-container" style="width: 120px; margin: 0;">
+                                            <div class="progress-bar" style="width: {{ req.fulfillment_percentage }}%;"></div>
+                                        </div>
+                                        <span style="font-size: 0.8rem; font-weight: 700;">{{ req.fulfillment_percentage }}% satisfied</span>
+                                    </div>
+                                    <a href="{% url 'request_detail' req.id %}" class="btn btn-primary" style="padding: 0.45rem 1rem; font-size: 0.8rem;">Donate Now</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="text-align: center; color: var(--text-secondary); padding: 2rem 0;">No active donation requests at the moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Published Reviews -->
+            <div class="glass-card" style="background: var(--bg-secondary);">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                    Reviews & Feedback
+                </h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    {% if reviews %}
+                        {% for rev in reviews %}
+                            <div style="padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 0.75rem; background-color: var(--bg-primary);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);">{{ rev.donor.full_name }}</div>
+                                    <span style="font-size: 0.75rem; color: var(--text-light);">{{ rev.created_at|date:"M d, Y" }}</span>
+                                </div>
+                                <div class="star-rating" style="margin-bottom: 0.5rem; font-size: 0.75rem;">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= rev.rating %}
+                                            <i class="fa-solid fa-star"></i>
+                                        {% else %}
+                                            <i class="fa-regular fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; font-style: italic;">
+                                    "{{ rev.comment }}"
+                                </p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="text-align: center; color: var(--text-secondary); padding: 2rem 0;">No reviews left yet. Be the first to leave a feedback!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

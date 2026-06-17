@@ -1,0 +1,64 @@
+{% if requests %}
+    {% for req in requests %}
+        <div class="glass-card" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 380px;">
+            <div>
+                <!-- Category and Priority -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span class="badge badge-medium" style="background-color: var(--primary-light); color: var(--primary);"><i class="fa-solid fa-tag"></i> {{ req.category.name|default:"General" }}</span>
+                    <span class="badge 
+                        {% if req.priority == 'Low' %}badge-low
+                        {% elif req.priority == 'Medium' %}badge-medium
+                        {% elif req.priority == 'High' %}badge-high
+                        {% else %}badge-urgent{% endif %}">
+                        <i class="fa-solid fa-triangle-exclamation"></i> {{ req.priority }}
+                    </span>
+                </div>
+                
+                <!-- Request Title -->
+                <h3 style="font-weight: 800; font-size: 1.2rem; margin-bottom: 0.5rem; line-height: 1.4;">
+                    <a href="{% url 'request_detail' req.id %}" style="color: var(--text-primary);">{{ req.title }}</a>
+                </h3>
+                
+                <!-- Orphanage Details -->
+                <p style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 1rem;">
+                    <i class="fa-solid fa-hotel"></i> 
+                    <a href="{% url 'orphanage_detail' req.orphanage.id %}" style="text-decoration: underline;">{{ req.orphanage.orphanage_name }}</a>
+                </p>
+                
+                <!-- Description -->
+                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                    {{ req.description|truncatechars:120 }}
+                </p>
+            </div>
+            
+            <div>
+                <!-- Progress Bar -->
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.25rem;">
+                        <span>Fulfillment Progress</span>
+                        <span>{{ req.fulfillment_percentage }}%</span>
+                    </div>
+                    <div class="progress-bar-container" style="margin: 0;">
+                        <div class="progress-bar" style="width: {{ req.fulfillment_percentage }}%;"></div>
+                    </div>
+                    <small style="font-size: 0.75rem; color: var(--text-light);">{{ req.quantity_fulfilled }} of {{ req.quantity_needed }} met</small>
+                </div>
+                
+                <!-- Actions -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-light);"><i class="fa-regular fa-calendar"></i> Deadline: {{ req.deadline|date:"M d, Y" }}</span>
+                    {% if req.status != 'Completed' %}
+                        <a href="{% url 'request_detail' req.id %}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Donate</a>
+                    {% else %}
+                        <span class="badge badge-completed"><i class="fa-solid fa-circle-check"></i> Fulfilled</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 4rem 0;">
+        <i class="fa-solid fa-clipboard-question" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem;"></i>
+        <p>No active donation requests match your search criteria.</p>
+    </div>
+{% endif %}
